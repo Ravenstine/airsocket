@@ -1,3 +1,4 @@
 /node_modules
 /spec/*.js
 /demo
+npm-debug.log
