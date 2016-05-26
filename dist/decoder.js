@@ -18,7 +18,7 @@ module.exports = (function() {
     this.samples = [];
     this.formats = (function() {
       var j, len, ref, results;
-      ref = this.options.formats || ['string'];
+      ref = this.options.formats || ['ascii'];
       results = [];
       for (j = 0, len = ref.length; j < len; j++) {
         format = ref[j];
