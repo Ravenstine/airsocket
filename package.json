@@ -44,6 +44,6 @@
     "soundrive": "=0.1.0",
     "vinyl-source-stream": "^1.1.0",
     "webpack-stream": "^3.1.0",
-    "webworkify": "^1.2.1",
+    "webworkify": "^1.2.1"
   }
 }
