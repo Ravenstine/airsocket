@@ -1,20 +1,18 @@
-var Encoder;
-
-Encoder = (function() {
+module.exports = (function() {
   var Helpers, Soundrive;
 
   Soundrive = require('soundrive');
 
   Helpers = require('./helpers');
 
-  function Encoder(options) {
+  function _Class(options) {
     if (options == null) {
       options = {};
     }
     this.options = require('./defaults')(options);
   }
 
-  Encoder.prototype.encode = function(string, options) {
+  _Class.prototype.encode = function(string, options) {
     var bits, checksum, encodedBits, i, j, len, sample, samples;
     if (options == null) {
       options = {};
@@ -39,7 +37,7 @@ Encoder = (function() {
     };
   };
 
-  Encoder.prototype._stringToSamples = function(string, options) {
+  _Class.prototype._stringToSamples = function(string, options) {
     var bits;
     if (options == null) {
       options = {};
@@ -48,7 +46,7 @@ Encoder = (function() {
     return this._bitsToSamples(bits, options);
   };
 
-  Encoder.prototype._stringToBits = function(string) {
+  _Class.prototype._stringToBits = function(string) {
     var bit, bits, char, j, k, len, len1, ref, ref1;
     bits = [];
     ref = string.split('');
@@ -63,11 +61,11 @@ Encoder = (function() {
     return bits;
   };
 
-  Encoder.prototype._zeroPad = function(num) {
+  _Class.prototype._zeroPad = function(num) {
     return '00000000'.slice(String(num).length) + num;
   };
 
-  Encoder.prototype._bitsToSamples = function(bits, options) {
+  _Class.prototype._bitsToSamples = function(bits, options) {
     var b, bit, bitsLength, buffer, ease, frequency, i, j, len, n, oscillator;
     buffer = new Float32Array(bits.length * options.samplesPerBit);
     ease = (0.0225 * options.samplesPerBit) / options.sampleRate;
@@ -101,7 +99,7 @@ Encoder = (function() {
     return buffer;
   };
 
-  Encoder.prototype._bitToFrequency = function(bit) {
+  _Class.prototype._bitToFrequency = function(bit) {
     if (bit === 1) {
       return this.options.frequencies.mark;
     } else if (bit === 0) {
@@ -111,8 +109,6 @@ Encoder = (function() {
     }
   };
 
-  return Encoder;
+  return _Class;
 
 })();
-
-module.exports = Encoder;

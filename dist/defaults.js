@@ -10,7 +10,7 @@ module.exports = function(options) {
     },
     sampleRate: 44100,
     preamble: [0, 1, 0, 1, 0, 1, 0, 1],
-    messageLength: 15,
+    messageLength: 12,
     bitDuration: 10
   };
   output = {};

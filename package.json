@@ -1,8 +1,8 @@
 {
   "name": "airsocket",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Transmit/receive messages through audio.",
-  "main": "build/airsocket.js",
+  "main": "dist/airsocket.js",
   "browser": {
     "airsocket": "./dist/browser/airsocket.js"
   },

@@ -1,4 +1,4 @@
-class Decoder
+module.exports = class
 
   Goertzel  = require 'goertzeljs'
 
@@ -6,9 +6,9 @@ class Decoder
 
   constructor: (options={}) ->
     @options = require('./defaults')(options)
-    @options.samplesPerBit    = Helpers.samplesPerBit(@options.bitDuration, @options.sampleRate)
+    @options.samplesPerBit = Helpers.samplesPerBit(@options.bitDuration, @options.sampleRate)
     @samples  = []
-    @formats  = (new format({preamble: @options.preamble, messageLength: @options.messageLength}) for format in (@options.formats or [@constructor.ASCIIDecoder]))
+    @formats  = (new @constructor.Decoders[format]({preamble: @options.preamble, messageLength: @options.messageLength}) for format in (@options.formats or ['ascii']))
     @goertzel = new Goertzel
       frequencies: [@options.frequencies.mark, @options.frequencies.space]
       sampleRate : @options.sampleRate
@@ -82,7 +82,7 @@ class Decoder
     (spaceFreq > markFreq)
 
 
-  class @ByteDecoder
+  class BinaryDecoder
     constructor: (options={}) ->
       @options =
         messageLength: 32
@@ -142,19 +142,19 @@ class Decoder
       else
         false
 
-  class @StringDecoder extends @ByteDecoder
+  class StringDecoder extends BinaryDecoder
     decode: ->
       if string = super()
         @_bytesToString string
       else
         null
 
-  class @URLDecoder extends @StringDecoder
+  class URLDecoder extends StringDecoder
     decode: ->
       super()?.match(/^((http|https|ftp):\/\/.*)/)?[1];
 
 
-  class @ASCIIDecoder extends @StringDecoder
+  class ASCIIDecoder extends StringDecoder
     decode: ->
       @_toAscii super()
       
@@ -164,7 +164,7 @@ class Decoder
       string?.match(/^[\x00-\x7F]*$/)?.pop()
 
 
-  class @MD5Decoder extends @StringDecoder
+  class MD5Decoder extends StringDecoder
     decode: ->
       @_toHash super()
 
@@ -175,7 +175,7 @@ class Decoder
       string?.match(/^[a-f0-9]{32}$/gm)?.pop()
 
 
-  class @SHA1Decoder extends @StringDecoder
+  class SHA1Decoder extends StringDecoder
     constructor: (options={}) ->
       options.size = (Math.max(40, (@options.messageLength or 0)) + 2) * 8 # 40 characters plus preamble byte and checksum byte
       super(options)
@@ -189,7 +189,7 @@ class Decoder
       string?.match(/^[a-f0-9]{40}$/gm)?.pop()
 
 
-  class @Base64decoder extends @StringDecoder
+  class Base64Decoder extends StringDecoder
     decode: ->
       @_toBinary super()
       
@@ -198,5 +198,10 @@ class Decoder
     _toBinary: (string) ->
       string?.match(/^[\x00-\x7F]*$/)?.pop()
 
-
-module.exports = Decoder
+  @Decoders:
+    binary: BinaryDecoder
+    string: StringDecoder
+    ascii:  ASCIIDecoder
+    url:    URLDecoder
+    sha1:   SHA1Decoder
+    base64: Base64Decoder

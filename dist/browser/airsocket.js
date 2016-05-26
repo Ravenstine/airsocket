@@ -1,16 +1,15 @@
 require=(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-var Decoder,
-  extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+var extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
   hasProp = {}.hasOwnProperty;
 
-Decoder = (function() {
-  var Goertzel, Helpers;
+module.exports = (function() {
+  var ASCIIDecoder, Base64Decoder, BinaryDecoder, Goertzel, Helpers, MD5Decoder, SHA1Decoder, StringDecoder, URLDecoder;
 
   Goertzel = require('goertzeljs');
 
   Helpers = require('./helpers');
 
-  function Decoder(options) {
+  function _Class(options) {
     var format;
     if (options == null) {
       options = {};
@@ -20,11 +19,11 @@ Decoder = (function() {
     this.samples = [];
     this.formats = (function() {
       var j, len, ref, results;
-      ref = this.options.formats || [this.constructor.ASCIIDecoder];
+      ref = this.options.formats || ['string'];
       results = [];
       for (j = 0, len = ref.length; j < len; j++) {
         format = ref[j];
-        results.push(new format({
+        results.push(new this.constructor.Decoders[format]({
           preamble: this.options.preamble,
           messageLength: this.options.messageLength
         }));
@@ -38,7 +37,7 @@ Decoder = (function() {
     this.callbacks = {};
   }
 
-  Decoder.prototype.ingest = function(buffer) {
+  _Class.prototype.ingest = function(buffer) {
     var j, len, sample;
     for (j = 0, len = buffer.length; j < len; j++) {
       sample = buffer[j];
@@ -47,7 +46,7 @@ Decoder = (function() {
     return this._process();
   };
 
-  Decoder.prototype.trigger = function(event, data) {
+  _Class.prototype.trigger = function(event, data) {
     var base, base1, callback, j, k, len, len1, ref, ref1, results;
     ref = ((base = (this.callbacks != null ? this.callbacks : this.callbacks = {}))[event] != null ? base[event] : base[event] = []);
     for (j = 0, len = ref.length; j < len; j++) {
@@ -71,12 +70,12 @@ Decoder = (function() {
     return results;
   };
 
-  Decoder.prototype.on = function(event, callback) {
+  _Class.prototype.on = function(event, callback) {
     var base;
     return ((base = (this.callbacks != null ? this.callbacks : this.callbacks = {}))[event] != null ? base[event] : base[event] = []).push(callback);
   };
 
-  Decoder.prototype._processBuffer = function(buffer) {
+  _Class.prototype._processBuffer = function(buffer) {
     var bit, data, format, i, j, k, len, len1, ref, sample;
     this.goertzel.refresh();
     i = 0;
@@ -100,7 +99,7 @@ Decoder = (function() {
     return null;
   };
 
-  Decoder.prototype._process = function() {
+  _Class.prototype._process = function() {
     var buffer, i, results, t, times;
     times = Math.floor(this.samples.length / this.options.samplesPerBit);
     t = 0;
@@ -118,7 +117,7 @@ Decoder = (function() {
     return results;
   };
 
-  Decoder.prototype._toBit = function(goertzel) {
+  _Class.prototype._toBit = function(goertzel) {
     if (this._isMark(goertzel)) {
       return 1;
     } else if (this._isSpace(goertzel)) {
@@ -128,22 +127,22 @@ Decoder = (function() {
     }
   };
 
-  Decoder.prototype._isMark = function(goertzel) {
+  _Class.prototype._isMark = function(goertzel) {
     var markFreq, spaceFreq;
     markFreq = goertzel.energies[this.options.frequencies.mark.toString()];
     spaceFreq = goertzel.energies[this.options.frequencies.space.toString()];
     return markFreq > spaceFreq;
   };
 
-  Decoder.prototype._isSpace = function(goertzel) {
+  _Class.prototype._isSpace = function(goertzel) {
     var markFreq, spaceFreq;
     markFreq = goertzel.energies[this.options.frequencies.mark.toString()];
     spaceFreq = goertzel.energies[this.options.frequencies.space.toString()];
     return spaceFreq > markFreq;
   };
 
-  Decoder.ByteDecoder = (function() {
-    function ByteDecoder(options) {
+  BinaryDecoder = (function() {
+    function BinaryDecoder(options) {
       var name, option;
       if (options == null) {
         options = {};
@@ -159,14 +158,14 @@ Decoder = (function() {
       this.bits = [];
     }
 
-    ByteDecoder.prototype.push = function(bit) {
+    BinaryDecoder.prototype.push = function(bit) {
       this.bits.push(bit);
       if (this.bits.length > this.options.size) {
         return this.bits.shift();
       }
     };
 
-    ByteDecoder.prototype.decode = function() {
+    BinaryDecoder.prototype.decode = function() {
       var bytes, checksum, preamble;
       if (this._hasPreamble()) {
         bytes = this.bytes();
@@ -178,7 +177,7 @@ Decoder = (function() {
       }
     };
 
-    ByteDecoder.prototype.bytes = function(i) {
+    BinaryDecoder.prototype.bytes = function(i) {
       var bitsLength, bytes;
       if (i == null) {
         i = 0;
@@ -192,7 +191,7 @@ Decoder = (function() {
       return bytes;
     };
 
-    ByteDecoder.prototype._bytesToString = function(bytes) {
+    BinaryDecoder.prototype._bytesToString = function(bytes) {
       var byte;
       return [
         (function() {
@@ -207,7 +206,7 @@ Decoder = (function() {
       ][0].join("");
     };
 
-    ByteDecoder.prototype._byteToString = function(byte) {
+    BinaryDecoder.prototype._byteToString = function(byte) {
       var byteString;
       byteString = byte.join('');
       return byteString.replace(/\s*[01]{8}\s*/g, function(byteString) {
@@ -215,13 +214,13 @@ Decoder = (function() {
       });
     };
 
-    ByteDecoder.prototype._hasPreamble = function() {
+    BinaryDecoder.prototype._hasPreamble = function() {
       var byte;
       byte = this.bits.slice(0, 8);
       return this._isPreamble(byte);
     };
 
-    ByteDecoder.prototype._isPreamble = function(byte) {
+    BinaryDecoder.prototype._isPreamble = function(byte) {
       if (byte.length === 8) {
         return Helpers.arrayCompare(byte, this.options.preamble);
       } else {
@@ -229,7 +228,7 @@ Decoder = (function() {
       }
     };
 
-    ByteDecoder.prototype._matchesChecksum = function(bytes, aChecksum) {
+    BinaryDecoder.prototype._matchesChecksum = function(bytes, aChecksum) {
       var bChecksum, bit, bits, byte, j, k, len, len1;
       bits = [];
       for (j = 0, len = bytes.length; j < len; j++) {
@@ -246,11 +245,11 @@ Decoder = (function() {
       }
     };
 
-    return ByteDecoder;
+    return BinaryDecoder;
 
   })();
 
-  Decoder.StringDecoder = (function(superClass) {
+  StringDecoder = (function(superClass) {
     extend(StringDecoder, superClass);
 
     function StringDecoder() {
@@ -268,9 +267,9 @@ Decoder = (function() {
 
     return StringDecoder;
 
-  })(Decoder.ByteDecoder);
+  })(BinaryDecoder);
 
-  Decoder.URLDecoder = (function(superClass) {
+  URLDecoder = (function(superClass) {
     extend(URLDecoder, superClass);
 
     function URLDecoder() {
@@ -284,9 +283,9 @@ Decoder = (function() {
 
     return URLDecoder;
 
-  })(Decoder.StringDecoder);
+  })(StringDecoder);
 
-  Decoder.ASCIIDecoder = (function(superClass) {
+  ASCIIDecoder = (function(superClass) {
     extend(ASCIIDecoder, superClass);
 
     function ASCIIDecoder() {
@@ -304,9 +303,9 @@ Decoder = (function() {
 
     return ASCIIDecoder;
 
-  })(Decoder.StringDecoder);
+  })(StringDecoder);
 
-  Decoder.MD5Decoder = (function(superClass) {
+  MD5Decoder = (function(superClass) {
     extend(MD5Decoder, superClass);
 
     function MD5Decoder() {
@@ -327,9 +326,9 @@ Decoder = (function() {
 
     return MD5Decoder;
 
-  })(Decoder.StringDecoder);
+  })(StringDecoder);
 
-  Decoder.SHA1Decoder = (function(superClass) {
+  SHA1Decoder = (function(superClass) {
     extend(SHA1Decoder, superClass);
 
     function SHA1Decoder(options) {
@@ -351,33 +350,40 @@ Decoder = (function() {
 
     return SHA1Decoder;
 
-  })(Decoder.StringDecoder);
+  })(StringDecoder);
 
-  Decoder.Base64decoder = (function(superClass) {
-    extend(Base64decoder, superClass);
+  Base64Decoder = (function(superClass) {
+    extend(Base64Decoder, superClass);
 
-    function Base64decoder() {
-      return Base64decoder.__super__.constructor.apply(this, arguments);
+    function Base64Decoder() {
+      return Base64Decoder.__super__.constructor.apply(this, arguments);
     }
 
-    Base64decoder.prototype.decode = function() {
-      return this._toBinary(Base64decoder.__super__.decode.call(this));
+    Base64Decoder.prototype.decode = function() {
+      return this._toBinary(Base64Decoder.__super__.decode.call(this));
     };
 
-    Base64decoder.prototype._toBinary = function(string) {
+    Base64Decoder.prototype._toBinary = function(string) {
       var ref;
       return string != null ? (ref = string.match(/^[\x00-\x7F]*$/)) != null ? ref.pop() : void 0 : void 0;
     };
 
-    return Base64decoder;
+    return Base64Decoder;
 
-  })(Decoder.StringDecoder);
+  })(StringDecoder);
 
-  return Decoder;
+  _Class.Decoders = {
+    binary: BinaryDecoder,
+    string: StringDecoder,
+    ascii: ASCIIDecoder,
+    url: URLDecoder,
+    sha1: SHA1Decoder,
+    base64: Base64Decoder
+  };
+
+  return _Class;
 
 })();
-
-module.exports = Decoder;
 
 },{"./defaults":2,"./helpers":4,"goertzeljs":6}],2:[function(require,module,exports){
 module.exports = function(options) {
@@ -392,7 +398,7 @@ module.exports = function(options) {
     },
     sampleRate: 44100,
     preamble: [0, 1, 0, 1, 0, 1, 0, 1],
-    messageLength: 15,
+    messageLength: 12,
     bitDuration: 10
   };
   output = {};
@@ -408,23 +414,21 @@ module.exports = function(options) {
 };
 
 },{}],3:[function(require,module,exports){
-var Encoder;
-
-Encoder = (function() {
+module.exports = (function() {
   var Helpers, Soundrive;
 
   Soundrive = require('soundrive');
 
   Helpers = require('./helpers');
 
-  function Encoder(options) {
+  function _Class(options) {
     if (options == null) {
       options = {};
     }
     this.options = require('./defaults')(options);
   }
 
-  Encoder.prototype.encode = function(string, options) {
+  _Class.prototype.encode = function(string, options) {
     var bits, checksum, encodedBits, i, j, len, sample, samples;
     if (options == null) {
       options = {};
@@ -449,7 +453,7 @@ Encoder = (function() {
     };
   };
 
-  Encoder.prototype._stringToSamples = function(string, options) {
+  _Class.prototype._stringToSamples = function(string, options) {
     var bits;
     if (options == null) {
       options = {};
@@ -458,7 +462,7 @@ Encoder = (function() {
     return this._bitsToSamples(bits, options);
   };
 
-  Encoder.prototype._stringToBits = function(string) {
+  _Class.prototype._stringToBits = function(string) {
     var bit, bits, char, j, k, len, len1, ref, ref1;
     bits = [];
     ref = string.split('');
@@ -473,11 +477,11 @@ Encoder = (function() {
     return bits;
   };
 
-  Encoder.prototype._zeroPad = function(num) {
+  _Class.prototype._zeroPad = function(num) {
     return '00000000'.slice(String(num).length) + num;
   };
 
-  Encoder.prototype._bitsToSamples = function(bits, options) {
+  _Class.prototype._bitsToSamples = function(bits, options) {
     var b, bit, bitsLength, buffer, ease, frequency, i, j, len, n, oscillator;
     buffer = new Float32Array(bits.length * options.samplesPerBit);
     ease = (0.0225 * options.samplesPerBit) / options.sampleRate;
@@ -511,7 +515,7 @@ Encoder = (function() {
     return buffer;
   };
 
-  Encoder.prototype._bitToFrequency = function(bit) {
+  _Class.prototype._bitToFrequency = function(bit) {
     if (bit === 1) {
       return this.options.frequencies.mark;
     } else if (bit === 0) {
@@ -521,11 +525,9 @@ Encoder = (function() {
     }
   };
 
-  return Encoder;
+  return _Class;
 
 })();
-
-module.exports = Encoder;
 
 },{"./defaults":2,"./helpers":4,"soundrive":7}],4:[function(require,module,exports){
 module.exports = {
@@ -775,13 +777,11 @@ Goertzel = (function() {
         return false;
       }
     },
-    generateSineBuffer: function(frequencies, sampleRate, numberOfSamples, i) {
-      var buffer, frequency, j, len, val, volumePerSine;
-      if (i == null) {
-        i = 0;
-      }
-      buffer = new (Float32Array || Array)(numberOfSamples);
+    generateSineBuffer: function(frequencies, sampleRate, numberOfSamples) {
+      var buffer, frequency, i, j, len, val, volumePerSine;
+      buffer = new (Uint8ClampedArray || Array)(numberOfSamples);
       volumePerSine = 1 / frequencies.length;
+      i = 0;
       while (i < numberOfSamples) {
         val = 0;
         for (j = 0, len = frequencies.length; j < len; j++) {
@@ -795,7 +795,7 @@ Goertzel = (function() {
     },
     generateWhiteNoiseBuffer: function(sampleRate, numberOfSamples) {
       var buffer, i;
-      buffer = new (Float32Array || Array)(numberOfSamples);
+      buffer = new (Uint8ClampedArray || Array)(numberOfSamples);
       i = 0;
       while (i < numberOfSamples) {
         buffer[i] = Math.random() * 2 - 1;

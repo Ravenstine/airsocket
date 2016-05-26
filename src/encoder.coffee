@@ -1,4 +1,4 @@
-class Encoder
+module.exports = class
 
   Soundrive = require 'soundrive'
 
@@ -72,5 +72,3 @@ class Encoder
       @options.frequencies.space
     else
       0
-
-module.exports = Encoder

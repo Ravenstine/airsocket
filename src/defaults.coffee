@@ -10,7 +10,7 @@ module.exports =
         # space: 941
       sampleRate :  44100
       preamble: [0,1,0,1,0,1,0,1] # The letter U
-      messageLength: 15 # default number of bytes per message
+      messageLength: 12 # default number of bytes per message
       bitDuration: 10 # ms
     output = {}
     for name, option of defaults
