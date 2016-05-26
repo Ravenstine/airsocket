@@ -13,18 +13,25 @@ The duration of audio that represents a bit can be variable, but is currently de
 
 ## Use
 
-AirSocket can be used with or without WebAudio, but this is a typical use:
+AirSocket is [Browserified](https://github.com/substack/node-browserify), so you can include it in the browser with a script tag:
+```html
+<script type='text/javascript' src='node_modules/airsocket/dist/browser/airsocket.js' />
+```
+
+You can also use it in Node.js, though you'll have to provide your own WebAudio substitute.
+
+It can be used with or without WebAudio, but this is a typical use:
 
 ```javascript
 AirSocket = require('airsocket')
-
-navigator.getUserMedia({ audio: true, function(e){
+// you should polyfill getUserMedia
+navigator.getUserMedia({ audio: true}, function(e){
   var socket = new AirSocket({worker: true, audioSource: e});
   socket.on('message', function(m){
     console.log(m.data); // m is a MessageEvent, just like with WebSocket
-  })
+  });
   socket.send('hello world!');
-}})
+}, function(err){console.log(err)});
 // NOTE: I'm using semicolons just to appease you. ;)
 ```
 
