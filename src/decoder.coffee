@@ -24,10 +24,6 @@ module.exports = class
       setTimeout =>
         callback(data)
       , 0
-    for callback in ((@callbacks ?= {})['event'] ?= [])
-      setTimeout =>
-        callback(data)
-      , 0
 
   on: (event, callback) ->
     ((@callbacks ?= {})[event] ?= []).push callback

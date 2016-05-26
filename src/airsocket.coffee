@@ -12,6 +12,13 @@ module.exports = class
 
   constructor: (options={}) ->
     @options = require('./defaults')(options)
+    if @options.context
+      @context = @options.context
+    if @options.audioSource
+      # Automatically create a context or use an existing one
+      # if we receive an audioSource.
+      @context = @context or new AudioContext
+    @options.sampleRate = @context.sampleRate or @options.sampleRate
     # If no type specified, enable both transmission
     # and reception.  Else, only enable those specified.
     #
@@ -31,7 +38,6 @@ module.exports = class
           @trigger 'message', message
 
     if @options.audioSource
-      @context   = @options.context or new AudioContext
       @gain      = @context.createGain()
       audioInput = @context.createMediaStreamSource(@options.audioSource)
       audioInput.connect @gain
@@ -45,7 +51,7 @@ module.exports = class
         buffer = e.inputBuffer.getChannelData(0)
         @processBuffer(buffer)
       if @options.transmit or !@options.receive
-        @encoder = new @constructor.Encoder(options)
+        @encoder = new @constructor.Encoder(@options)
 
   processBuffer: (buffer) ->
     @decoder?.ingest buffer

@@ -12,6 +12,7 @@ module.exports =
       preamble: [0,1,0,1,0,1,0,1] # The letter U
       messageLength: 12 # default number of bytes per message
       bitDuration: 10 # ms
+      worker: true
     output = {}
     for name, option of defaults
       output[name] = option
