@@ -49,6 +49,9 @@ The `worker` option runs the decoding logic in a WebWorker, which results in bet
 - **mark**: The frequency that carries the '1' bit.
 - **space**: The frequency that carries the '0' bit.
 
+## Try It Out
+[See it in action!](https://jsfiddle.net/dhmzzdf7/)
+
 ## Notes
 The protocol being used is subject to change!  
 
