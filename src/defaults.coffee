@@ -13,6 +13,7 @@ module.exports =
       messageLength: 12 # default number of bytes per message
       bitDuration: 10 # ms
       worker: true
+      volume: 100
     output = {}
     for name, option of defaults
       output[name] = option

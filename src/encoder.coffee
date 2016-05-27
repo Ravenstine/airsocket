@@ -49,7 +49,7 @@ module.exports = class
       amplitude:
         value: 0
         ease: ease
-    oscillator.changeAmplitude 25
+    oscillator.changeAmplitude @options.volume
     i = 0
     b = 1
     bitsLength = bits.length
