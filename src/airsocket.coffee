@@ -51,7 +51,7 @@ module.exports = class
         @worker?.addEventListener 'message', (msg) =>
           @trigger 'message', msg
       else
-        @decoder = new @constructor.Decoder(options)
+        @decoder = new @constructor.Decoder(@options)
         @decoder.on 'decode', (e) =>
           message = new MessageEvent('message', {data: e})
           @trigger 'message', message
