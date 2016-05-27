@@ -11,7 +11,8 @@ module.exports = function(options) {
     sampleRate: 44100,
     preamble: [0, 1, 0, 1, 0, 1, 0, 1],
     messageLength: 12,
-    bitDuration: 10
+    bitDuration: 10,
+    worker: true
   };
   output = {};
   for (name in defaults) {

@@ -46,20 +46,11 @@ module.exports = (function() {
   };
 
   _Class.prototype.trigger = function(event, data) {
-    var base, base1, callback, j, k, len, len1, ref, ref1, results;
+    var base, callback, j, len, ref, results;
     ref = ((base = (this.callbacks != null ? this.callbacks : this.callbacks = {}))[event] != null ? base[event] : base[event] = []);
+    results = [];
     for (j = 0, len = ref.length; j < len; j++) {
       callback = ref[j];
-      setTimeout((function(_this) {
-        return function() {
-          return callback(data);
-        };
-      })(this), 0);
-    }
-    ref1 = ((base1 = (this.callbacks != null ? this.callbacks : this.callbacks = {}))['event'] != null ? base1['event'] : base1['event'] = []);
-    results = [];
-    for (k = 0, len1 = ref1.length; k < len1; k++) {
-      callback = ref1[k];
       results.push(setTimeout((function(_this) {
         return function() {
           return callback(data);

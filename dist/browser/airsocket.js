@@ -47,20 +47,11 @@ module.exports = (function() {
   };
 
   _Class.prototype.trigger = function(event, data) {
-    var base, base1, callback, j, k, len, len1, ref, ref1, results;
+    var base, callback, j, len, ref, results;
     ref = ((base = (this.callbacks != null ? this.callbacks : this.callbacks = {}))[event] != null ? base[event] : base[event] = []);
+    results = [];
     for (j = 0, len = ref.length; j < len; j++) {
       callback = ref[j];
-      setTimeout((function(_this) {
-        return function() {
-          return callback(data);
-        };
-      })(this), 0);
-    }
-    ref1 = ((base1 = (this.callbacks != null ? this.callbacks : this.callbacks = {}))['event'] != null ? base1['event'] : base1['event'] = []);
-    results = [];
-    for (k = 0, len1 = ref1.length; k < len1; k++) {
-      callback = ref1[k];
       results.push(setTimeout((function(_this) {
         return function() {
           return callback(data);
@@ -399,7 +390,8 @@ module.exports = function(options) {
     sampleRate: 44100,
     preamble: [0, 1, 0, 1, 0, 1, 0, 1],
     messageLength: 12,
-    bitDuration: 10
+    bitDuration: 10,
+    worker: true
   };
   output = {};
   for (name in defaults) {
@@ -1247,46 +1239,19 @@ module.exports = (function() {
   work = require('webworkify');
 
   function _Class(options) {
-    var audioInput, ref, ref1;
+    var audioInput, ref, ref1, ref2;
     if (options == null) {
       options = {};
     }
     this.options = require('./defaults')(options);
-    if (this.options.receive || !this.options.transmit) {
-      if (this.options.worker) {
-        this.worker = work(require('./worker.js'));
-        if ((ref = this.worker) != null) {
-          ref.addEventListener('message', (function(_this) {
-            return function(msg) {
-              return _this.trigger('message', msg);
-            };
-          })(this));
-        }
-      } else {
-        this.decoder = new this.constructor.Decoder(options);
-        this.decoder.on('decode', (function(_this) {
-          return function(e) {
-            var message;
-            message = new MessageEvent('message', {
-              data: e
-            });
-            return _this.trigger('message', message);
-          };
-        })(this));
-      }
+    if (this.options.context) {
+      this.context = this.options.context;
     }
     if (this.options.audioSource) {
-      this.context = this.options.context || new AudioContext;
+      this.context = this.context || new AudioContext;
       this.gain = this.context.createGain();
       audioInput = this.context.createMediaStreamSource(this.options.audioSource);
       audioInput.connect(this.gain);
-      if ((ref1 = this.worker) != null) {
-        ref1.postMessage({
-          initialize: {
-            sampleRate: this.context.sampleRate
-          }
-        });
-      }
       this.processor = this.options.processor || this.context.createScriptProcessor(1024, 1, 1);
       this.gain.connect(this.processor);
       this.processor.connect(this.context.destination);
@@ -1297,8 +1262,39 @@ module.exports = (function() {
           return _this.processBuffer(buffer);
         };
       })(this);
-      if (this.options.transmit || !this.options.receive) {
-        this.encoder = new this.constructor.Encoder(options);
+      this.options.sampleRate = ((ref = this.context) != null ? ref.sampleRate : void 0) || this.options.sampleRate;
+    }
+    if (this.options.transmit || !this.options.receive) {
+      this.encoder = new this.constructor.Encoder(this.options);
+    }
+    if (this.options.receive || !this.options.transmit) {
+      if (this.options.worker) {
+        this.worker = work(require('./worker.js'));
+        if ((ref1 = this.worker) != null) {
+          ref1.postMessage({
+            initialize: {
+              sampleRate: this.options.sampleRate
+            }
+          });
+        }
+        if ((ref2 = this.worker) != null) {
+          ref2.addEventListener('message', (function(_this) {
+            return function(msg) {
+              return _this.trigger('message', msg);
+            };
+          })(this));
+        }
+      } else {
+        this.decoder = new this.constructor.Decoder(this.options);
+        this.decoder.on('decode', (function(_this) {
+          return function(e) {
+            var message;
+            message = new MessageEvent('message', {
+              data: e
+            });
+            return _this.trigger('message', message);
+          };
+        })(this));
       }
     }
   }
