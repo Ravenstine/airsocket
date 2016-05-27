@@ -80,7 +80,7 @@ module.exports = (function() {
         ease: ease
       }
     });
-    oscillator.changeAmplitude(25);
+    oscillator.changeAmplitude(this.options.volume);
     i = 0;
     b = 1;
     bitsLength = bits.length;

@@ -391,7 +391,8 @@ module.exports = function(options) {
     preamble: [0, 1, 0, 1, 0, 1, 0, 1],
     messageLength: 12,
     bitDuration: 10,
-    worker: true
+    worker: true,
+    volume: 100
   };
   output = {};
   for (name in defaults) {
@@ -488,7 +489,7 @@ module.exports = (function() {
         ease: ease
       }
     });
-    oscillator.changeAmplitude(25);
+    oscillator.changeAmplitude(this.options.volume);
     i = 0;
     b = 1;
     bitsLength = bits.length;
