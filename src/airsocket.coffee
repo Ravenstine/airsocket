@@ -17,8 +17,24 @@ module.exports = class
     if @options.audioSource
       # Automatically create a context or use an existing one
       # if we receive an audioSource.
-      @context = @context or new AudioContext
-    @options.sampleRate = @context.sampleRate or @options.sampleRate
+      @context   = @context or new AudioContext
+      @gain      = @context.createGain()
+      audioInput = @context.createMediaStreamSource(@options.audioSource)
+      audioInput.connect @gain
+      @processor = @options.processor or @context.createScriptProcessor(1024, 1, 1)
+      @gain.connect @processor
+      @processor.connect @context.destination
+      @processor.onaudioprocess = (e) =>
+        buffer = e.inputBuffer.getChannelData(0)
+        @processBuffer(buffer)
+      # context samplerate has to have higher precedence
+      # since it doesn't make sense to use it and then
+      # use a different sample rate.
+      @options.sampleRate = @context?.sampleRate or @options.sampleRate
+
+    if @options.transmit or !@options.receive
+      @encoder = new @constructor.Encoder(@options)
+
     # If no type specified, enable both transmission
     # and reception.  Else, only enable those specified.
     #
@@ -29,6 +45,9 @@ module.exports = class
     if @options.receive or !@options.transmit
       if @options.worker
         @worker = work require('./worker.js')
+        @worker?.postMessage
+          initialize:
+            sampleRate:  @options.sampleRate
         @worker?.addEventListener 'message', (msg) =>
           @trigger 'message', msg
       else
@@ -37,21 +56,6 @@ module.exports = class
           message = new MessageEvent('message', {data: e})
           @trigger 'message', message
 
-    if @options.audioSource
-      @gain      = @context.createGain()
-      audioInput = @context.createMediaStreamSource(@options.audioSource)
-      audioInput.connect @gain
-      @worker?.postMessage
-        initialize:
-          sampleRate:  @context.sampleRate
-      @processor = @options.processor or @context.createScriptProcessor(1024, 1, 1)
-      @gain.connect @processor
-      @processor.connect @context.destination
-      @processor.onaudioprocess = (e) =>
-        buffer = e.inputBuffer.getChannelData(0)
-        @processBuffer(buffer)
-      if @options.transmit or !@options.receive
-        @encoder = new @constructor.Encoder(@options)
 
   processBuffer: (buffer) ->
     @decoder?.ingest buffer

@@ -14,7 +14,7 @@ module.exports = class
     bits     = @_stringToBits Helpers.padString(string, @options.messageLength)
     checksum = Helpers.checksum bits
     bits     = @options.preamble.concat bits.concat checksum # add the preamble byte and checksum byte
-    samples = options.buffer or []
+    samples  = options.buffer or []
     encodedBits = @_bitsToSamples(bits, options)
     i = 0
     for sample in encodedBits
