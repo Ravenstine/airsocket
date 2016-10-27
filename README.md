@@ -3,6 +3,8 @@ AirSocket
 
 Transmit messages through an audio signal using frequency modulation.
 
+**NOTE:** The demo seems to have broken randomly.  Perhaps there was some recent change in the browser API, but there are no errors occurring.  Any help figuring this out would be appreciated.
+
 ## Messages
 Each message has a preamble byte of *01010101*(the letter U), a fixed-size payload, and a postamble checksum byte which is all the payload bytes XOR'd together. 
 
