@@ -3,8 +3,6 @@ AirSocket
 
 Transmit messages through an audio signal using frequency modulation.
 
-**NOTE:** The demo seems to have broken randomly.  Perhaps there was some recent change in the browser API, but there are no errors occurring.  Any help figuring this out would be appreciated.
-
 ## Messages
 Each message has a preamble byte of *01010101*(the letter U), a fixed-size payload, and a postamble checksum byte which is all the payload bytes XOR'd together. 
 
@@ -49,7 +47,7 @@ navigator.getUserMedia({ audio: true}, function(e){
 - **frequencies**: Expects an object that holds values that override the default frequencies that represent binary numbers.
     - **mark**: The frequency that carries the '1' bit.
     - **space**: The frequency that carries the '0' bit.
-- **processor*: Add a custom script processor.  Normally, one gets created automatically from a passed-in AudioContext but, if you need to use the processor directly, you can create one from a context and pass it in here.
+- **processor**: Add a custom script processor.  Normally, one gets created automatically from a passed-in AudioContext but, if you need to use the processor directly, you can create one from a context and pass it in here.
 
 ## Try It Out
 [See it in action!](https://jsfiddle.net/dhmzzdf7/)
